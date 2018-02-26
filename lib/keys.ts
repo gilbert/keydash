@@ -1,11 +1,29 @@
+import { pick } from './util'
 
-export type Keys = Record<string,string>
+type Key = {
+  cmd: string,
+  desc: string,
+}
+
+export type Keys = Record<string,Key>
 
 export const standardMap: Keys = {
-  "Ctrl-F": "goCharRight", "Ctrl-B": "goCharLeft", "Ctrl-P": "goLineUp", "Ctrl-N": "goLineDown",
-  "Alt-F": "goWordRight", "Alt-B": "goWordLeft", "Ctrl-A": "goLineStart", "Ctrl-E": "goLineEnd",
-  "Ctrl-V": "goPageDown", "Alt-V": "goPageUp", "Ctrl-D": "delCharAfter", "Ctrl-H": "delCharBefore",
-  "Alt-D": "delWordAfter", "Alt-Backspace": "delWordBefore", "Ctrl-K": "killLine", "Ctrl-T": "transposeChars"
+  'Ctrl-F': { cmd: 'goCharRight', desc: 'Go right one character' },
+  'Ctrl-B': { cmd: 'goCharLeft', desc: 'Go left one character' },
+  'Ctrl-P': { cmd: 'goLineUp', desc: 'Go up one line' },
+  'Ctrl-N': { cmd: 'goLineDown', desc: 'Go down one line' },
+  'Alt-F': { cmd: 'goWordRight', desc: 'Go right one word' },
+  'Alt-B': { cmd: 'goWordLeft', desc: 'Go left one word' },
+  'Ctrl-A': { cmd: 'goLineStart', desc: 'Go to beginning of line' },
+  'Ctrl-E': { cmd: 'goLineEnd', desc: 'Go to end of line' },
+  'Ctrl-V': { cmd: 'goPageDown', desc: 'Go down one page' },
+  'Alt-V': { cmd: 'goPageUp', desc: 'Go up one page' },
+  'Ctrl-D': { cmd: 'delCharAfter', desc: 'Delete one character forwards' },
+  'Ctrl-H': { cmd: 'delCharBefore', desc: 'Delete one character backwards' },
+  'Alt-D': { cmd: 'delWordAfter', desc: 'Delete one word forwards' },
+  'Alt-Backspace': { cmd: 'delWordBefore', desc: 'Delete one word backwards' },
+  'Ctrl-K': { cmd: 'killLine', desc: 'Delete from cursor to end of line' },
+  'Ctrl-T': { cmd: 'transposeChars', desc: 'Switch characters' },
 }
 
 export function expandKeys (ctrls: string, alts: string): Keys {
@@ -14,12 +32,4 @@ export function expandKeys (ctrls: string, alts: string): Keys {
       alts.split('').map(ch => `Alt-${ch}`)
     )
   return pick(standardMap, keystrokes)
-}
-
-function pick<T, K extends keyof T>(obj: T, keys: K[]): Pick<T, K> {
-  const ret: any = {};
-  keys.forEach(key => {
-    ret[key] = obj[key];
-  })
-  return ret;
 }

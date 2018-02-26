@@ -1,6 +1,8 @@
 import m from 'mithril'
 import { Level } from '../lib/levels'
 import { DashRun } from '../lib/dash'
+import { standardMap } from '../lib/keys'
+import { objMap } from '../lib/util'
 
 declare const CodeMirror: any
 
@@ -9,6 +11,7 @@ type Attrs = {
   onkeystroke: (ks: string) => void
   onprogress: (mod: number) => void
   ref: (vcr: VCR) => void
+  class?: string
 }
 type State = {
   level: Level
@@ -17,8 +20,8 @@ type State = {
   editor: any
 }
 
-type VCR = {
-  playback: (run: DashRun) => void
+export type VCR = {
+  playback: (level: Level, run: DashRun) => void
 }
 
 
@@ -29,36 +32,51 @@ export default {
     state.mode = 'live'
 
     attrs.ref({
-      playback: (run) => {
-        state.run = run
+      playback: (level, run) => {
         state.mode = 'playback'
+        state.editor.unlock()
+        state.editor.doc.setValue(level.map)
+        state.editor.lock()
+        runPlayback(state.editor, run)
       }
     })
   },
 
   oncreate({ state, attrs, dom }) {
     // Restrict available keybindings
-    CodeMirror.keyMap['training'] = attrs.level.keys || {}
+    CodeMirror.keyMap['training'] = objMap(attrs.level.keys, v => v.cmd)
 
-    var editor = state.editor = CodeMirror.fromTextArea(dom, {
+    var editor = state.editor = CodeMirror.fromTextArea(dom.children[0], {
       lineNumbers: true,
       mode: "text/html",
       theme: "blackboard",
       keyMap: "training",
     })
 
-    editor.on('keyHandled', handleKey)
-    editor.on('beforeChange', validateChange)
-    editor.on('mousedown', restrictMouse)
+    editor.lock = function () {
+      editor.on('keyHandled', handleKey)
+      editor.on('beforeChange', validateChange)
+      editor.on('mousedown', restrictMouse)
+    }
+    editor.unlock = function () {
+      editor.off('keyHandled', handleKey)
+      editor.off('beforeChange', validateChange)
+      editor.off('mousedown', restrictMouse)
+    }
 
-    // editor.unlock = function () {
-    //   editor.off('keyHandled', handleKey)
-    //   editor.off('beforeChange', validateChange)
-    //   editor.off('mousedown', restrictMouse)
-    // }
+    editor.lock()
 
+    var pendingProgress: number | null = null
+
+    //
+    // keystrokes trigger after validation
+    //
     function handleKey (_editor: any, name: string) {
       attrs.onkeystroke(name)
+      if ( pendingProgress ) {
+        attrs.onprogress(pendingProgress)
+        pendingProgress = null
+      }
     }
 
     function restrictMouse (editor: any, e: Event) {
@@ -79,12 +97,54 @@ export default {
         change.cancel()
       }
 
-      var mod = deletingChars.split('x').length - 1
-      attrs.onprogress(mod)
+      pendingProgress = deletingChars.split('x').length - 1
     }
   },
 
-  view({ state }) {
-    return m('textarea', state.level.map)
+  onbeforeremove({ state, dom }) {
+    state.editor.unlock()
+    state.editor.toTextArea()
+  },
+
+  view({ state, attrs }) {
+    return m('.dash-editor', { class: attrs.class }, m('textarea', state.level.map))
   }
 } as m.Component<Attrs,State>
+
+
+function runPlayback (editor: any, run: DashRun) {
+  editor.focus()
+  editor.setCursor(0,0)
+
+  var groups = []
+  while (run.length) {
+    var group = takeWhile(run, it => typeof it !== 'number')
+    run = run.slice(group.length)
+    groups.push(group)
+  }
+
+  for (var i=0; i < groups.length; i++) {
+    for (var k=0; k < groups[i].length; k++) {
+      var event = groups[i][k]
+      if ( typeof event === 'number' ) {
+        // Do nothing
+      }
+      else if ( 'progressMod' in event ) {
+        // Indicate point
+      }
+      else {
+        let cmd = standardMap[event.ks].cmd
+        setTimeout(() => editor.execCommand(cmd), event.d)
+      }
+    }
+  }
+}
+
+function takeWhile<T>(array: T[], cond: (item:T) => boolean) {
+  var results = []
+  for (var i=0; i < array.length; i++) {
+    results.push(array[i])
+    if ( ! cond(array[i]) ) break;
+  }
+  return results
+}

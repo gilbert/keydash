@@ -1,35 +1,44 @@
 import m from 'mithril'
-import { Level } from '../lib/levels'
+import levels, { Level } from '../lib/levels'
 import Dash, { Stats } from '../lib/dash'
 import layout from '../lib/layout'
 
-import DashEditor from './DashEditor'
+import DashEditor, { VCR } from './DashEditor'
 
 
-type Attrs = {
-  level: Level
-}
+type Attrs = {}
 type State = {
+  level: Level
   dash: any
-  editor: any
+  vcr: any
 }
 
 export default {
   oninit({ state, attrs }) {
-    state.dash = Dash(attrs.level.goal)
+    var level = levels[0]
+    state.dash = Dash(level.goal)
     state.dash.map(m.redraw)
 
-    state.editor = null
+    state.level = level
+    state.vcr = null
   },
-  view({ state, attrs }) {
-    var {level} = attrs
+
+  view({ state }) {
+    var level = state.level
     var stats = state.dash.stats
 
     return layout(
       m('.p-2', [
         m('dl',
           m('dt', 'Level'),
-          m('dd', level.name),
+          m('dd',
+            m('select', {
+              value: level.id,
+              onchange: (e:any) => selectLevel(state,e.target.value)
+            }, levels.map(lv =>
+              m('option', { value: lv.id }, lv.name)
+            ))
+          ),
           m('dt', 'Stats'),
           m('dd',
             `Status: ${stats.mode}`,
@@ -43,38 +52,53 @@ export default {
             `Strokes: ${stats.strokeCount}`,
             stats.mode === 'win' && [
               m('br'),
-              m('button.btn.btn-success', "Playback")
+              m('button.btn.btn-success', {
+                onclick: () => state.vcr.playback(level, state.dash.stats.history)
+              }, "Playback")
             ]
           ),
         ),
         m('p', "Available shortcuts:"),
         m('ul',
           Object.keys(level.keys).sort().map(k =>
-            m('li', JSON.stringify(k))
+            m('li', k, ": ", level.keys[k].desc)
           )
         )
       ]),
-      [
-        m(DashEditor, {
-          // key: level.id,
-          level: level,
-          ref: (editor: any) => {
-            state.editor = editor
-          },
-          onkeystroke: (name: string) => {
-            if ( state.dash.stats.mode === 'pending' ) {
-              state.dash.start()
+      m('.d-flex-v', [
+        m('.text-bold.p-1', "Delete all x's!"),
+        [ // Fragment to make key-identity work
+          m(DashEditor, {
+            class: 'flex scroll',
+            key: level.id,
+            level: level,
+            ref: (vcr: VCR) => {
+              state.vcr = vcr
+            },
+            onkeystroke: (name: string) => {
+              if ( state.dash.stats.mode === 'pending' ) {
+                state.dash.start()
+              }
+              state.dash.update({ keystroke: name })
+            },
+            onprogress: (amount: number) => {
+              state.dash.update({ progressMod: amount })
             }
-            state.dash.update({ keystroke: name })
-          },
-          onprogress: (amount: number) => {
-            state.dash.update({ progressMod: amount })
-          }
-        })
+          })
+        ]
       ])
+    )
   }
 } as m.Component<Attrs,State>
 
+
+function selectLevel(state: State, id: string) {
+  var level = levels.find(lv => lv.id === id)!
+  state.level = level
+
+  state.dash = Dash(level.goal)
+  state.dash.map(m.redraw)
+}
 
 function timeElapsed (stats: Stats) {
   var totalSeconds = stats.seconds

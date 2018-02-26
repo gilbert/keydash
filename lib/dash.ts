@@ -47,7 +47,7 @@ export default function Dash (goal: number) {
     }
     else if ( 'keystroke' in update ) {
       state.strokeCount += 1
-      state.history.push({ ks: update.keystroke, d: Date.now() - state.startTime - state.seconds*1000 })
+      state.history.push({ ks: update.keystroke, d: Date.now() - state.startTime })
     }
     else if ( 'progressMod' in update ) {
       state.progress += update.progressMod
