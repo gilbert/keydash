@@ -21,8 +21,8 @@ const Tips: m.FactoryComponent<Attrs> = ({attrs}) => {
             m('a[href=/tips/setup]', link, "Ideal Setup"),
             subpage === 'setup' &&
             m('ul.nav',
-              m('li', m('a[href=/tips/setup#remap-ctrl]', "Remap Ctrl")),
-              m('li', m('a[href=/tips/setup#missing-shortcuts]', "Missing Shorcuts")),
+              m('li', m('a[href=#remap-ctrl]', "Remap Ctrl")),
+              m('li', m('a[href=#missing-shortcuts]', "Missing Shorcuts")),
             )
           ),
         ),
