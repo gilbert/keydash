@@ -6,12 +6,25 @@ const tipsRoute = {
     return import('./components/Tips').then(mod => mod.default)
   }
 }
+;(window as any).m = m
 
-m.route.prefix('')
 var prefix = window.location.host.match('localhost') ? '' : '/keydash'
+var q = m.parseQueryString(window.location.search.slice(1))
 
-m.route(document.getElementById('app')!, prefix + '/', {
-  [prefix + '/']: Practice,
-  [prefix + '/tips']: tipsRoute,
-  [prefix + '/tips/:key']: tipsRoute,
+if ( q.p ) {
+  // Redirected via github pages' 404.html
+  if ( window.history && window.history.pushState ) {
+    window.history.replaceState({}, document.title, q.p + window.location.hash)
+  }
+  else {
+    window.location.replace(prefix)
+  }
+}
+
+m.route.prefix(prefix)
+
+m.route(document.getElementById('app')!, '/', {
+  '/': Practice,
+  '/tips': tipsRoute,
+  '/tips/:key': tipsRoute,
 })
