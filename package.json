@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "publish": "./publish.sh",
+    "start": "parcel index.html --no-hmr",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

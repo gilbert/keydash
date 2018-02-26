@@ -7,5 +7,5 @@ Tutorials and exercises for working on your keyboard shortcut skills!
 ```bash
 npm install -g parcel-bundler
 npm install
-parcel index.html
+npm start
 ```
