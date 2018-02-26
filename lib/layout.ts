@@ -12,6 +12,9 @@ export default function layout (sidebar: Content, content: Content) {
           // m('a[href=/].btn.btn-link', 'Levels'),
           // m('a[href=#].btn.btn-link', 'My Stats'),
         ),
+        m('section.navbar-section',
+          // m('a[href=#].navbar-brand.mr-2', 'Sign In'),
+        )
       ),
     ),
 

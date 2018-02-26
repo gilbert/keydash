@@ -66,12 +66,13 @@ export default {
         )
       ]),
       m('.d-flex-v', [
-        m('.text-bold.p-1', "Delete all x's!"),
+        m('.h2.p-1', "Delete all the x's!"),
         [ // Fragment to make key-identity work
           m(DashEditor, {
             class: 'flex scroll',
             key: level.id,
             level: level,
+            dashMode: () => state.dash.stats.mode,
             ref: (vcr: VCR) => {
               state.vcr = vcr
             },

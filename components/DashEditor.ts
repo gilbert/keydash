@@ -8,6 +8,7 @@ declare const CodeMirror: any
 
 type Attrs = {
   level: Level
+  dashMode: () => string,
   onkeystroke: (ks: string) => void
   onprogress: (mod: number) => void
   ref: (vcr: VCR) => void
@@ -18,6 +19,7 @@ type State = {
   mode: 'live' | 'playback'
   run: DashRun
   editor: any
+  errorMsg: null | string
 }
 
 export type VCR = {
@@ -46,7 +48,7 @@ export default {
     // Restrict available keybindings
     CodeMirror.keyMap['training'] = objMap(attrs.level.keys, v => v.cmd)
 
-    var editor = state.editor = CodeMirror.fromTextArea(dom.children[0], {
+    var editor = state.editor = CodeMirror.fromTextArea(dom.children[1], {
       lineNumbers: true,
       mode: "text/html",
       theme: "blackboard",
@@ -81,22 +83,26 @@ export default {
 
     function restrictMouse (editor: any, e: Event) {
       e.preventDefault()
-      editor.focus()
-      editor.setCursor(0,0)
-      // editor.scrollCursorIntoView()
+      if ( attrs.dashMode() === 'pending' ) {
+        editor.focus()
+        editor.setCursor(0,0)
+      }
     }
 
     function validateChange (editor: any, change: any) {
       if (change.text[0]) {
-        console.log("You can't add your own characters")
+        state.errorMsg = `Invalid keystroke (${change.text[0]})`
         change.cancel()
+        return
       }
       var deletingChars = editor.doc.getRange(change.from, change.to)
       if (deletingChars.match(/[^x]/)) {
-        console.log("You can only delete x characters")
+        state.errorMsg = `You can only delete x characters`
         change.cancel()
+        return
       }
 
+      state.errorMsg = null
       pendingProgress = deletingChars.split('x').length - 1
     }
   },
@@ -107,7 +113,10 @@ export default {
   },
 
   view({ state, attrs }) {
-    return m('.dash-editor', { class: attrs.class }, m('textarea', state.level.map))
+    return m('.dash-editor', { class: attrs.class },
+      m('.toast', state.errorMsg || m.trust('&nbsp;')),
+      m('textarea', state.level.map)
+    )
   }
 } as m.Component<Attrs,State>
 
