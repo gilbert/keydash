@@ -2,6 +2,7 @@
 body, html {
   width: 100vw;
   height: 100vh;
+  background: #fefefe;
 }
 
 #app {
@@ -9,9 +10,23 @@ body, html {
   width: 100vw;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 }
 
 main {
   // overflow-y: auto;
+}
+
+header {
+  background: #f8f8f8;
+}
+
+ul, ol {
+  list-style-position: outside;
+  margin-left: 1.5rem;
+}
+
+pre {
+  border: 1px solid #ccc;
+  border-radius: 2px;
+  padding: 0.4rem;
 }

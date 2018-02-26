@@ -114,7 +114,7 @@ export default {
 
   view({ state, attrs }) {
     return m('.dash-editor', { class: attrs.class },
-      m('.toast', state.errorMsg || m.trust('&nbsp;')),
+      m('.text-italic', state.errorMsg || m.trust('&nbsp;')),
       m('textarea', state.level.map)
     )
   }

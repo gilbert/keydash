@@ -27,7 +27,7 @@ export default {
     var level = state.level
     var stats = state.dash.stats
 
-    return layout(
+    return layout('.d-flex-v.no-overflow',
       m('.p-2', [
         m('dl',
           m('dt', 'Level'),
@@ -69,7 +69,7 @@ export default {
         m('.h2.p-1', "Delete all the x's!"),
         [ // Fragment to make key-identity work
           m(DashEditor, {
-            class: 'flex scroll',
+            class: 'd-flex-v',
             key: level.id,
             level: level,
             dashMode: () => state.dash.stats.mode,
