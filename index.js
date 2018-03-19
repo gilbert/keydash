@@ -1,14 +1,29 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
+import m from 'mithril'
+import Practice from './components/Practice'
+
+const tipsRoute = {
+  onmatch() {
+    return import('./components/Tips').then(mod => mod.default)
+  }
 }
-Object.defineProperty(exports, "__esModule", { value: true });
-const mithril_1 = __importDefault(require("mithril"));
-const levels_1 = __importDefault(require("./lib/levels"));
-const Practice_1 = __importDefault(require("./components/Practice"));
-var level = levels_1.default.find(l => l.id === 'updown');
-mithril_1.default.mount(document.getElementById('app'), {
-    view() {
-        return mithril_1.default(Practice_1.default, { level: level });
-    }
-});
+
+var prefix = window.location.host.match('localhost') ? '' : '/keydash'
+var q = m.parseQueryString(window.location.search.slice(1))
+
+if ( q.p ) {
+  // Redirected via github pages' 404.html
+  if ( window.history && window.history.pushState ) {
+    window.history.replaceState({}, document.title, q.p + window.location.hash)
+  }
+  else {
+    window.location.replace(prefix)
+  }
+}
+
+m.route.prefix(prefix)
+
+m.route(document.getElementById('app'), '/', {
+  '/': Practice,
+  '/tips': tipsRoute,
+  '/tips/:key': tipsRoute,
+})
