@@ -1,6 +1,9 @@
 import m from 'mithril'
 import Practice from './components/Practice'
 
+// HACK: Make available for dynamically imported pages
+window.m = m
+
 const tipsRoute = {
   onmatch() {
     return import('./components/Tips').then(mod => mod.default)

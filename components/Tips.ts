@@ -14,8 +14,8 @@ const Tips: m.FactoryComponent<Attrs> = ({attrs}) => {
 
   return {
     view() {
-      return layout(''
-        m('ul.nav'
+      return layout('',
+        m('ul.nav',
           m('li.nav-item', m('a[href=/tips]', link, "Overview")),
           m('li.nav-item',
             m('a[href=/tips/setup]', link, "Ideal Setup"),
@@ -34,7 +34,8 @@ const Tips: m.FactoryComponent<Attrs> = ({attrs}) => {
 
 export default Tips
 
-const link = {oncreate: m.route.link}
+// HACK: Use same mithril instance from base page
+const link = {oncreate: (window as any).m.route.link}
 
 const keydict =
 `{
